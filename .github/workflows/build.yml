@@ -1,0 +1,35 @@
+name: Build DLL
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # (optional) Use the setup-msbuild helper so msbuild is on PATH
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Build solution (Release x64)
+        shell: cmd
+        run: |
+          rem Build the solution with MSBuild
+          msbuild "%WORKSPACE%\StellaSora-Tool.sln" /p:Configuration=Release /p:Platform=x64 /m
+
+      - name: Collect built DLL
+        run: |
+          dir /s /b
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StellaSora-dll
+          path: |
+            **\bin\Release\**\*.dll
+            **\Release\**\*.dll
+            **\bin\**\*.dll
