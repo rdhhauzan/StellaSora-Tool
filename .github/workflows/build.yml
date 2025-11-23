@@ -8,22 +8,42 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      # (optional) Use the setup-msbuild helper so msbuild is on PATH
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show current dir & list files
+        shell: cmd
+        run: |
+          echo Current directory:
+          cd
+          echo ------------------------
+          dir /b
+          echo ------------------------
+          echo Recursively list top-level files:
+          dir /s /b *.sln *.vcxproj || echo "No solution/project found"
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
+
+      - name: Where is msbuild (debug)
+        shell: cmd
+        run: |
+          where msbuild
+          msbuild /version
 
       - name: Build solution (Release x64)
         shell: cmd
         run: |
-          rem Build the solution with MSBuild
-          msbuild "%WORKSPACE%\StellaSora-Tool.sln" /p:Configuration=Release /p:Platform=x64 /m
+          rem Build the solution with MSBuild from repo root
+          msbuild "StellaSora-Tool.sln" /p:Configuration=Release /p:Platform=x64 /m
 
-      - name: Collect built DLL
+      - name: Show build outputs (debug)
+        shell: cmd
         run: |
-          dir /s /b
+          echo Looking for DLLs...
+          dir /s /b *.dll || echo "No DLLs found"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -33,3 +53,4 @@ jobs:
             **\bin\Release\**\*.dll
             **\Release\**\*.dll
             **\bin\**\*.dll
+            **\*.dll
